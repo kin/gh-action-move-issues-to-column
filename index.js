@@ -7,6 +7,7 @@ try {
   const inputIssues = core.getInput("issues");
   const payload = (inputIssues !== undefined && inputIssues.length != 0) ? inputIssues : github.context.payload;
   console.log("inputIssues: ", inputIssues);
+  
   const issues = Array.isArray(payload) ? payload : [payload];
   console.log("Issues: ", issues);
   
