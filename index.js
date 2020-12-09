@@ -4,9 +4,13 @@ const { graphql } = require("@octokit/graphql");
 
 try {
   const accessToken = core.getInput("access-token");
-  const payload = core.getInput("issues");
+  const inputIssues = core.getInput("issues");
+  const payload = (inputIssues !== undefined && inputIssues.length != 0) ? inputIssues : github.context.payload;
+  console.log("inputIssues: ", inputIssues);
   const issues = Array.isArray(payload) ? payload : [payload];
-  const repoUrl = issues[0].repository_url;
+  console.log("Issues: ", issues);
+  
+  const repoUrl = issues[0].issue.repository_url;
   const splitUrl = repoUrl.split('/');
   const repoOwner = splitUrl[4];
   const repo = splitUrl[5];
@@ -80,8 +84,8 @@ try {
     return graphql(updateCardColumnMutation, {
       cardId: cardId,
       columnId: columnId,
-      header: {
-	authorization: `bearer ${accessToken}`
+      headers: {
+	authorization: `bearer ${accessToken}`,
       }
     });
   }
@@ -90,12 +94,12 @@ try {
   const run = async () => {
     try {
       // Find target column id
-      const { repository: { projects: { edges: projectEdges } } }= await getColumnIds('kin', 'dot-com', project);
+      const { repository: { projects: { edges: projectEdges } } }= await getColumnIds(repoOwner, repo, project);
       const columns = projectEdges.flatMap(p => p.node.columns.edges).map(c => c.node);
       const targetColumn = columns.find(c => c.name.toLowerCase() == columnName.toLowerCase());
 
       // Find card ids for issues
-      const issueIds = issues.map(i => i.node_id);
+      const issueIds = issues.map(i => i.issue.node_id);
       const cardPromises = await Promise.all(issueIds.map(getCardsForIssue));
       const cardIds = cardPromises.flatMap(c => c.node.projectCards.edges.flatMap(e => e.node.id));
 
@@ -104,14 +108,20 @@ try {
 	core.setFailed("Target column does not exist on project. Please use a different column name");
       } else {
 	const targetColumnId = targetColumn.id;
-	cardIds.forEach(cardId => moveCardToColumn(cardId, targetColumnId));
+	cardIds.forEach(cardId => {
+	  moveCardToColumn(cardId, targetColumnId);
+	  console.log("Moving cardId: ", cardId);
+	});
       };
     }
     catch (error) {
       core.setFailed(error.message);
     }
   };
+
+  run();
 }
 catch (error) {
   core.setFailed(error.message);
 }
+

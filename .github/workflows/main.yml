@@ -1,0 +1,27 @@
+name: Assigned Issues Are In Progress
+
+on:
+  workflow_dispatch:
+  pull_request_target:
+    types: [review_requested]
+
+jobs:
+  move-to-in-progress:
+    runs-on: ubuntu-latest
+    name: Move to In Progress Column
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get Linked Issues Action
+        uses: kin/gh-action-get-linked-issues@v1.0
+        id: linked-issues
+        with:
+          # Required: personal access token with permissions to archive cards
+          access-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Move to In Progress
+        uses: ./
+        with:
+          access-token: "${{ secrets.GITHUB_TOKEN }}"
+          project-name: "My Project"
+          target-column: "In Progress"
+          issues: {{ steps.linked_issues.outputs.issues }}
