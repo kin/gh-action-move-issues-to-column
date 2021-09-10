@@ -81,6 +81,7 @@ try {
       const parsedInput = JSON.parse(inputIssues);
       const project = core.getInput("project-name");
       const columnName = core.getInput("target-column");
+      const columnId = core.getInput("target-column-id");
 
       const payload = parsedInput.length != 0 ? parsedInput : github.context.payload;
       core.info(`payload: ${payload}`);
@@ -102,7 +103,11 @@ try {
       // Find target column
       const { repository: { projects: { edges: projectEdges } } }= await getColumnIds(repoOwner, repo, project);
       const columns = projectEdges.flatMap(p => p.node.columns.edges).map(c => c.node);
-      const targetColumn = columns.find(c => c.name.toLowerCase() == columnName.toLowerCase());
+      const targetColumn = if (typeof columnId !== 'undefined') { 
+                              columns.find(c => c.id == columnId);
+                            } else {
+                              columns.find(c => c.name.toLowerCase() == columnName.toLowerCase());
+                            }
       
       // Find card ids for issues
       const issueIds = issues.map(i => i.issue.node_id);
