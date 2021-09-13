@@ -2,7 +2,7 @@
 Moves issues' project cards to the column specified in the workflow. The issues are passed in either from workflow event triggers or manually.
 
 ## Workflow Template
-This is an example of how to use this action. If the event trigger is not for an issue, you can still use this by passing in the optional `issues` argument to pass in multiple issues to parse.
+This is an example of how to use this action. If the event trigger is not for an issue, you can still use this by passing in the optional `issues` argument to pass in multiple issues to parse.  
 ```
 name: Assigned Issues Are In Progress
 
