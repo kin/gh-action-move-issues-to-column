@@ -2,7 +2,7 @@ name: Assigned Issues Are In Progress
 
 on:
   issues:
-    types: [assigned]
+    types: [open]
 
 jobs:
   move-to-in-progress:
